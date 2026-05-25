@@ -3,317 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>熱量與蛋白質紀錄</title>
+  <title>CP Tracker</title>
+  <meta name="apple-mobile-web-app-title" content="CP Tracker">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" type="image/png" href="apple-touch-icon.png">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    :root {
-      --bg: #f6f7f9;
-      --card: #ffffff;
-      --text: #1f2937;
-      --muted: #6b7280;
-      --border: #e5e7eb;
-      --primary: #2563eb;
-      --primary-soft: #dbeafe;
-      --danger: #dc2626;
-      --success: #16a34a;
-      --shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-    }
-
-    .app {
-      width: 100%;
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 16px;
-      padding-bottom: 48px;
-    }
-
-    header {
-      margin-bottom: 16px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 26px;
-      line-height: 1.2;
-    }
-
-    .subtitle {
-      margin-top: 6px;
-      color: var(--muted);
-      font-size: 14px;
-    }
-
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 16px;
-      box-shadow: var(--shadow);
-      margin-bottom: 16px;
-    }
-
-    .card-title {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 12px;
-      gap: 12px;
-    }
-
-    h2 {
-      font-size: 18px;
-      margin: 0;
-    }
-
-    label {
-      display: block;
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-
-    input, select, textarea, button {
-      width: 100%;
-      font: inherit;
-      border-radius: 14px;
-    }
-
-    input, select, textarea {
-      border: 1px solid var(--border);
-      padding: 12px;
-      background: #fff;
-      color: var(--text);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 44px;
-    }
-
-    button {
-      border: 0;
-      background: var(--primary);
-      color: white;
-      padding: 13px 16px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    button.secondary {
-      background: var(--primary-soft);
-      color: var(--primary);
-    }
-
-    button.danger {
-      background: #fee2e2;
-      color: var(--danger);
-    }
-
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .grid-3 {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 12px;
-    }
-
-    .field {
-      margin-bottom: 12px;
-    }
-
-    .metrics {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-
-    .metric {
-      background: #f9fafb;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 14px;
-    }
-
-    .metric-name {
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 6px;
-    }
-
-    .metric-value {
-      font-size: 24px;
-      font-weight: 800;
-    }
-
-    .metric-sub {
-      margin-top: 4px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-
-    .progress-wrap {
-      margin-top: 12px;
-    }
-
-    .progress-label {
-      display: flex;
-      justify-content: space-between;
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 6px;
-    }
-
-    .progress {
-      height: 10px;
-      background: #e5e7eb;
-      border-radius: 999px;
-      overflow: hidden;
-    }
-
-    .bar {
-      height: 100%;
-      background: var(--primary);
-      width: 0%;
-      transition: width 0.2s ease;
-    }
-
-    .bar.protein {
-      background: var(--success);
-    }
-
-    .log-item {
-      border-top: 1px solid var(--border);
-      padding: 12px 0;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .log-item:first-child {
-      border-top: 0;
-    }
-
-    .log-main {
-      min-width: 0;
-    }
-
-    .log-food {
-      font-weight: 700;
-      margin-bottom: 4px;
-      word-break: break-word;
-    }
-
-    .log-meta {
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.4;
-    }
-
-    .log-delete {
-      width: auto;
-      padding: 8px 10px;
-      border-radius: 12px;
-      font-size: 13px;
-    }
-
-    .empty {
-      color: var(--muted);
-      text-align: center;
-      padding: 16px 0;
-    }
-
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-bottom: 16px;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: var(--bg);
-      padding: 8px 0;
-    }
-
-    .tab {
-      background: white;
-      color: var(--muted);
-      border: 1px solid var(--border);
-      padding: 10px;
-      font-weight: 700;
-    }
-
-    .tab.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-
-    .view {
-      display: none;
-    }
-
-    .view.active {
-      display: block;
-    }
-
-    .small-note {
-      font-size: 12px;
-      color: var(--muted);
-      line-height: 1.5;
-      margin-top: 8px;
-    }
-
-    .row-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-top: 12px;
-    }
-
-    canvas {
-      max-height: 280px;
-    }
-
-    @media (max-width: 480px) {
-      .app {
-        padding: 14px;
-        padding-bottom: 40px;
-      }
-
-      h1 {
-        font-size: 23px;
-      }
-
-      .grid-2, .grid-3 {
-        grid-template-columns: 1fr;
-      }
-
-      .metrics {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .metric-value {
-        font-size: 21px;
-      }
-    }
+    :root{--bg:#f6f7f9;--card:#fff;--text:#1f2937;--muted:#6b7280;--border:#e5e7eb;--primary:#2563eb;--primary-soft:#dbeafe;--danger:#dc2626;--success:#16a34a;--shadow:0 8px 24px rgba(0,0,0,.06)}
+    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}
+    .app{width:100%;max-width:720px;margin:0 auto;padding:16px 16px 48px} header{margin-bottom:16px} h1{margin:0;font-size:26px;line-height:1.2}.subtitle{margin-top:6px;color:var(--muted);font-size:14px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:16px;box-shadow:var(--shadow);margin-bottom:16px}.card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px} h2{font-size:18px;margin:0} h3{font-size:15px;margin:0 0 10px;color:var(--text)}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px} input,select,textarea,button{width:100%;font:inherit;border-radius:14px} input,select,textarea{border:1px solid var(--border);padding:12px;background:#fff;color:var(--text)} textarea{resize:vertical;min-height:44px} button{border:0;background:var(--primary);color:white;padding:13px 16px;font-weight:700;cursor:pointer} button.secondary{background:var(--primary-soft);color:var(--primary)} button.danger{background:#fee2e2;color:var(--danger)} button.ghost{background:#f3f4f6;color:var(--text)}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.field{margin-bottom:12px}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px}.metric{background:#f9fafb;border:1px solid var(--border);border-radius:18px;padding:14px}.metric-name{color:var(--muted);font-size:13px;margin-bottom:6px}.metric-value{font-size:24px;font-weight:800}.metric-sub{margin-top:4px;font-size:12px;color:var(--muted)}
+    .progress-wrap{margin-top:12px}.progress-label{display:flex;justify-content:space-between;color:var(--muted);font-size:13px;margin-bottom:6px}.progress{height:10px;background:#e5e7eb;border-radius:999px;overflow:hidden}.bar{height:100%;background:var(--primary);width:0%;transition:width .2s ease}.bar.protein{background:var(--success)}
+    .tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;position:sticky;top:0;z-index:10;background:var(--bg);padding:8px 0}.tab{background:white;color:var(--muted);border:1px solid var(--border);padding:10px;font-weight:700}.tab.active{background:var(--primary);color:white;border-color:var(--primary)}.view{display:none}.view.active{display:block}
+    .log-item{border-top:1px solid var(--border);padding:12px 0;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.log-item:first-child{border-top:0}.log-food{font-weight:700;margin-bottom:4px;word-break:break-word}.log-meta{color:var(--muted);font-size:13px;line-height:1.4}.log-delete{width:auto;padding:8px 10px;border-radius:12px;font-size:13px}.empty{color:var(--muted);text-align:center;padding:16px 0}.small-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:8px}.row-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px} canvas{max-height:280px}.divider{height:1px;background:var(--border);margin:14px 0}.pill{display:inline-block;background:#f3f4f6;border:1px solid var(--border);border-radius:999px;padding:5px 9px;font-size:12px;color:var(--muted)}
+    @media(max-width:480px){.app{padding:14px 14px 40px}h1{font-size:23px}.grid-2,.grid-3{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.metric-value{font-size:21px}}
   </style>
 </head>
 <body>
@@ -331,147 +38,71 @@
 
     <section id="todayView" class="view active">
       <div class="card">
-        <div class="card-title">
-          <h2>今日總結</h2>
-          <input id="selectedDate" type="date" style="max-width: 160px;" />
-        </div>
-
+        <div class="card-title"><h2>今日總結</h2><input id="selectedDate" type="date" style="max-width:160px" /></div>
         <div class="metrics">
-          <div class="metric">
-            <div class="metric-name">熱量</div>
-            <div class="metric-value"><span id="todayCalories">0</span></div>
-            <div class="metric-sub">kcal</div>
-          </div>
-          <div class="metric">
-            <div class="metric-name">蛋白質</div>
-            <div class="metric-value"><span id="todayProtein">0</span></div>
-            <div class="metric-sub">g</div>
-          </div>
+          <div class="metric"><div class="metric-name">熱量</div><div class="metric-value"><span id="todayCalories">0</span></div><div class="metric-sub">kcal</div></div>
+          <div class="metric"><div class="metric-name">蛋白質</div><div class="metric-value"><span id="todayProtein">0</span></div><div class="metric-sub">g</div></div>
         </div>
-
-        <div class="progress-wrap">
-          <div class="progress-label">
-            <span>熱量目標</span>
-            <span id="calorieProgressText">0%</span>
-          </div>
-          <div class="progress"><div id="calorieBar" class="bar"></div></div>
-        </div>
-
-        <div class="progress-wrap">
-          <div class="progress-label">
-            <span>蛋白質目標</span>
-            <span id="proteinProgressText">0%</span>
-          </div>
-          <div class="progress"><div id="proteinBar" class="bar protein"></div></div>
-        </div>
+        <div class="progress-wrap"><div class="progress-label"><span>熱量目標</span><span id="calorieProgressText">0%</span></div><div class="progress"><div id="calorieBar" class="bar"></div></div></div>
+        <div class="progress-wrap"><div class="progress-label"><span>蛋白質目標</span><span id="proteinProgressText">0%</span></div><div class="progress"><div id="proteinBar" class="bar protein"></div></div></div>
       </div>
 
       <div class="card">
-        <div class="card-title">
-          <h2>新增紀錄</h2>
-        </div>
+        <div class="card-title"><h2>新增紀錄</h2></div>
 
+        <h3>從常用食物庫快速填入 <span id="foodDbStatus" class="pill">讀取中</span></h3>
+        <div class="grid-2">
+          <div class="field"><label for="foodCategory">分類</label><select id="foodCategory"></select></div>
+          <div class="field"><label for="foodPreset">食物</label><select id="foodPreset"></select></div>
+        </div>
+        <div class="grid-2">
+          <div class="field"><label for="servings">份數倍率</label><input id="servings" type="number" min="0.1" step="0.1" value="1" /></div>
+          <div class="field"><label>食物庫資訊</label><div id="presetInfo" class="small-note" style="margin-top:0">尚未選擇食物</div></div>
+        </div>
+        <button id="applyPreset" class="secondary" type="button">套用到下方欄位</button>
+
+        <div class="divider"></div>
+
+        <h3>手動確認 / 修改</h3>
         <form id="logForm">
           <div class="grid-2">
-            <div class="field">
-              <label for="meal">餐別</label>
-              <select id="meal">
-                <option value="早餐">早餐</option>
-                <option value="午餐">午餐</option>
-                <option value="晚餐">晚餐</option>
-                <option value="點心">點心</option>
-                <option value="其他">其他</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="food">食物名稱</label>
-              <input id="food" type="text" placeholder="例如：雞胸肉、便當、豆漿" required />
-            </div>
+            <div class="field"><label for="meal">餐別</label><select id="meal"><option value="早餐">早餐</option><option value="午餐">午餐</option><option value="晚餐">晚餐</option><option value="點心">點心</option><option value="其他">其他</option></select></div>
+            <div class="field"><label for="food">食物名稱</label><input id="food" type="text" placeholder="例如：雞胸肉、便當、豆漿" required /></div>
           </div>
-
           <div class="grid-2">
-            <div class="field">
-              <label for="calories">熱量 kcal</label>
-              <input id="calories" type="number" min="0" step="1" placeholder="例如：500" required />
-            </div>
-            <div class="field">
-              <label for="protein">蛋白質 g</label>
-              <input id="protein" type="number" min="0" step="0.1" placeholder="例如：30" required />
-            </div>
+            <div class="field"><label for="calories">熱量 kcal</label><input id="calories" type="number" min="0" step="1" placeholder="例如：500" required /></div>
+            <div class="field"><label for="protein">蛋白質 g</label><input id="protein" type="number" min="0" step="0.1" placeholder="例如：30" required /></div>
           </div>
-
-          <div class="field">
-            <label for="note">備註，可不填</label>
-            <textarea id="note" placeholder="例如：健身後、外食估算、份量偏多"></textarea>
-          </div>
-
-          <button type="submit">加入今日紀錄</button>
+          <div class="field"><label for="note">備註，可不填</label><textarea id="note" placeholder="例如：健身後、外食估算、份量偏多"></textarea></div>
+          <button type="submit">加入當日紀錄</button>
         </form>
       </div>
 
-      <div class="card">
-        <div class="card-title">
-          <h2>當日明細</h2>
-        </div>
-        <div id="dailyLogs"></div>
-      </div>
+      <div class="card"><div class="card-title"><h2>當日明細</h2></div><div id="dailyLogs"></div></div>
     </section>
 
     <section id="chartView" class="view">
-      <div class="card">
-        <div class="card-title">
-          <h2>每日熱量趨勢</h2>
-        </div>
-        <canvas id="calorieChart"></canvas>
-      </div>
-
-      <div class="card">
-        <div class="card-title">
-          <h2>每日蛋白質趨勢</h2>
-        </div>
-        <canvas id="proteinChart"></canvas>
-      </div>
-
-      <div class="card">
-        <div class="card-title">
-          <h2>最近紀錄</h2>
-        </div>
-        <div id="recentLogs"></div>
-      </div>
+      <div class="card"><div class="card-title"><h2>每日熱量趨勢</h2></div><canvas id="calorieChart"></canvas></div>
+      <div class="card"><div class="card-title"><h2>每日蛋白質趨勢</h2></div><canvas id="proteinChart"></canvas></div>
+      <div class="card"><div class="card-title"><h2>最近紀錄</h2></div><div id="recentLogs"></div></div>
     </section>
 
     <section id="settingsView" class="view">
       <div class="card">
-        <div class="card-title">
-          <h2>每日目標</h2>
-        </div>
-
-        <div class="grid-2">
-          <div class="field">
-            <label for="calorieGoal">熱量目標 kcal</label>
-            <input id="calorieGoal" type="number" min="0" step="50" />
-          </div>
-          <div class="field">
-            <label for="proteinGoal">蛋白質目標 g</label>
-            <input id="proteinGoal" type="number" min="0" step="5" />
-          </div>
-        </div>
+        <div class="card-title"><h2>每日目標</h2></div>
+        <div class="grid-2"><div class="field"><label for="calorieGoal">熱量目標 kcal</label><input id="calorieGoal" type="number" min="0" step="50" /></div><div class="field"><label for="proteinGoal">蛋白質目標 g</label><input id="proteinGoal" type="number" min="0" step="5" /></div></div>
         <button id="saveGoals">儲存目標</button>
       </div>
-
       <div class="card">
-        <div class="card-title">
-          <h2>資料管理</h2>
-        </div>
-        <button id="exportCsv" class="secondary">匯出 CSV</button>
-        <div class="row-actions">
-          <button id="importBtn" class="secondary">匯入 CSV</button>
-          <button id="clearAll" class="danger">清空全部資料</button>
-        </div>
-        <input id="importFile" type="file" accept=".csv" style="display: none;" />
-        <div class="small-note">
-          目前資料存在這支手機的瀏覽器 localStorage。若換手機、清除瀏覽器資料或使用無痕模式，紀錄可能消失。建議定期匯出 CSV 備份。
-        </div>
+        <div class="card-title"><h2>資料管理</h2></div>
+        <button id="exportCsv" class="secondary">匯出紀錄 CSV</button>
+        <div class="row-actions"><button id="importBtn" class="secondary">匯入紀錄 CSV</button><button id="clearAll" class="danger">清空全部紀錄</button></div>
+        <input id="importFile" type="file" accept=".csv" style="display:none" />
+        <div class="small-note">飲食紀錄存在此手機 Safari 的 localStorage。更新網頁不會刪除紀錄，但清除 Safari 網站資料、換手機或換瀏覽器會讓原紀錄無法直接讀取。更新前建議先匯出 CSV 備份。</div>
+      </div>
+      <div class="card">
+        <div class="card-title"><h2>食物庫說明</h2></div>
+        <div class="small-note">此版本會從同一個 GitHub repo 讀取 foods.csv。你之後只要修改 foods.csv，就能更新常用食物清單，不需要改 HTML。CSV 欄位需包含 category, name, serving, calories, protein, default_meal, note。</div>
       </div>
     </section>
   </main>
@@ -479,433 +110,166 @@
   <script>
     const STORAGE_KEY = "fitness_calorie_protein_logs_v1";
     const SETTINGS_KEY = "fitness_calorie_protein_settings_v1";
+    const FOOD_CSV_PATH = "foods.csv";
+
+    const FALLBACK_FOODS = [
+      {category:"蛋白質",name:"雞胸肉",serving:"100 g",calories:165,protein:31,default_meal:"午餐",note:"去皮熟重估算"},
+      {category:"蛋白質",name:"水煮蛋",serving:"1 顆",calories:70,protein:6,default_meal:"早餐",note:"中大型雞蛋"},
+      {category:"飲料",name:"無糖豆漿",serving:"400 ml",calories:130,protein:13,default_meal:"早餐",note:"依品牌略有差異"},
+      {category:"補充品",name:"乳清蛋白",serving:"1 份",calories:120,protein:24,default_meal:"點心",note:"依品牌標示調整"},
+      {category:"主食",name:"白飯",serving:"1 碗",calories:280,protein:5,default_meal:"午餐",note:"約 200 g 熟飯"}
+    ];
 
     let logs = loadLogs();
     let settings = loadSettings();
+    let foodDb = [];
     let calorieChart = null;
     let proteinChart = null;
-
     const $ = (id) => document.getElementById(id);
 
-    function todayString() {
-      const d = new Date();
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
-      return `${yyyy}-${mm}-${dd}`;
-    }
+    function todayString(){const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+    function uid(){return `${Date.now()}_${Math.random().toString(16).slice(2)}`}
+    function loadLogs(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]}catch{return[]}}
+    function saveLogs(){localStorage.setItem(STORAGE_KEY,JSON.stringify(logs))}
+    function loadSettings(){try{return JSON.parse(localStorage.getItem(SETTINGS_KEY))||{calorieGoal:2200,proteinGoal:120}}catch{return{calorieGoal:2200,proteinGoal:120}}}
+    function saveSettings(){localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings))}
+    function selectedDate(){return $("selectedDate").value||todayString()}
 
-    function uid() {
-      return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-    }
-
-    function loadLogs() {
-      try {
-        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-      } catch {
-        return [];
+    async function loadFoodDb(){
+      try{
+        const res = await fetch(`${FOOD_CSV_PATH}?v=${Date.now()}`, {cache:"no-store"});
+        if(!res.ok) throw new Error("foods.csv not found");
+        const text = await res.text();
+        foodDb = parseFoodCsv(text);
+        if(foodDb.length===0) throw new Error("foods.csv is empty");
+        $("foodDbStatus").textContent = `${foodDb.length} 筆`;
+      }catch(err){
+        foodDb = FALLBACK_FOODS;
+        $("foodDbStatus").textContent = "使用內建備援";
       }
+      initFoodSelectors();
     }
 
-    function saveLogs() {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+    function parseCsvLine(line){
+      const result=[]; let current=""; let inQuotes=false;
+      for(let i=0;i<line.length;i++){
+        const ch=line[i], next=line[i+1];
+        if(ch==='"' && inQuotes && next==='"'){current+='"';i++}
+        else if(ch==='"'){inQuotes=!inQuotes}
+        else if(ch==="," && !inQuotes){result.push(current);current=""}
+        else{current+=ch}
+      }
+      result.push(current); return result;
     }
 
-    function loadSettings() {
-      try {
-        return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {
-          calorieGoal: 2200,
-          proteinGoal: 120,
-        };
-      } catch {
+    function parseFoodCsv(text){
+      const lines=String(text).replace(/^\ufeff/,"").split(/\r?\n/).filter(x=>x.trim().length>0);
+      if(lines.length<2) return [];
+      const header=parseCsvLine(lines[0]).map(x=>x.trim());
+      return lines.slice(1).map(line=>{
+        const values=parseCsvLine(line);
+        const row=Object.fromEntries(header.map((h,i)=>[h,(values[i]??"").trim()]));
         return {
-          calorieGoal: 2200,
-          proteinGoal: 120,
+          category: row.category || "未分類",
+          name: row.name || "未命名食物",
+          serving: row.serving || "1 份",
+          calories: Number(row.calories) || 0,
+          protein: Number(row.protein) || 0,
+          default_meal: row.default_meal || "其他",
+          note: row.note || ""
         };
-      }
+      }).filter(x=>x.name && (x.calories>0 || x.protein>0));
     }
 
-    function saveSettings() {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+    function initFoodSelectors(){
+      const cats=[...new Set(foodDb.map(x=>x.category))].sort();
+      $("foodCategory").innerHTML = cats.map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join("");
+      updateFoodOptions();
     }
 
-    function selectedDate() {
-      return $("selectedDate").value || todayString();
+    function updateFoodOptions(){
+      const cat=$("foodCategory").value;
+      const rows=foodDb.filter(x=>x.category===cat);
+      $("foodPreset").innerHTML = rows.map((x,i)=>`<option value="${i}">${escapeHtml(x.name)}（${escapeHtml(x.serving)}）</option>`).join("");
+      updatePresetInfo();
     }
 
-    function sumForDate(dateStr) {
-      return logs
-        .filter((x) => x.date === dateStr)
-        .reduce(
-          (acc, x) => {
-            acc.calories += Number(x.calories) || 0;
-            acc.protein += Number(x.protein) || 0;
-            return acc;
-          },
-          { calories: 0, protein: 0 }
-        );
+    function currentPreset(){
+      const cat=$("foodCategory").value;
+      const rows=foodDb.filter(x=>x.category===cat);
+      return rows[Number($("foodPreset").value)] || null;
     }
 
-    function dailySummary() {
-      const map = new Map();
-
-      logs.forEach((x) => {
-        if (!map.has(x.date)) {
-          map.set(x.date, { date: x.date, calories: 0, protein: 0 });
-        }
-        const row = map.get(x.date);
-        row.calories += Number(x.calories) || 0;
-        row.protein += Number(x.protein) || 0;
-      });
-
-      return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
+    function updatePresetInfo(){
+      const item=currentPreset();
+      const n=Number($("servings").value)||1;
+      if(!item){$("presetInfo").textContent="尚未選擇食物"; return;}
+      $("presetInfo").textContent = `${item.serving} × ${n} ＝ ${Math.round(item.calories*n)} kcal / ${(item.protein*n).toFixed(1)} g protein`;
     }
 
-    function pct(value, goal) {
-      if (!goal || goal <= 0) return 0;
-      return Math.round((value / goal) * 100);
+    function applyPreset(){
+      const item=currentPreset(); if(!item) return;
+      const n=Number($("servings").value)||1;
+      $("meal").value = item.default_meal || "其他";
+      $("food").value = `${item.name} × ${n}`;
+      $("calories").value = Math.round(item.calories*n);
+      $("protein").value = (item.protein*n).toFixed(1);
+      $("note").value = item.note ? `食物庫：${item.serving}；${item.note}` : `食物庫：${item.serving}`;
     }
 
-    function updateToday() {
-      const dateStr = selectedDate();
-      const total = sumForDate(dateStr);
-      const caloriePct = pct(total.calories, settings.calorieGoal);
-      const proteinPct = pct(total.protein, settings.proteinGoal);
+    function sumForDate(dateStr){return logs.filter(x=>x.date===dateStr).reduce((acc,x)=>{acc.calories+=Number(x.calories)||0;acc.protein+=Number(x.protein)||0;return acc},{calories:0,protein:0})}
+    function dailySummary(){const map=new Map();logs.forEach(x=>{if(!map.has(x.date))map.set(x.date,{date:x.date,calories:0,protein:0});const r=map.get(x.date);r.calories+=Number(x.calories)||0;r.protein+=Number(x.protein)||0});return Array.from(map.values()).sort((a,b)=>a.date.localeCompare(b.date))}
+    function pct(value,goal){if(!goal||goal<=0)return 0;return Math.round(value/goal*100)}
 
-      $("todayCalories").textContent = Math.round(total.calories);
-      $("todayProtein").textContent = total.protein.toFixed(1);
-
-      $("calorieProgressText").textContent = `${caloriePct}% / ${settings.calorieGoal} kcal`;
-      $("proteinProgressText").textContent = `${proteinPct}% / ${settings.proteinGoal} g`;
-
-      $("calorieBar").style.width = `${Math.min(caloriePct, 100)}%`;
-      $("proteinBar").style.width = `${Math.min(proteinPct, 100)}%`;
-
-      renderDailyLogs(dateStr);
-      renderRecentLogs();
-      renderCharts();
+    function updateToday(){
+      const dateStr=selectedDate(), total=sumForDate(dateStr), cp=pct(total.calories,settings.calorieGoal), pp=pct(total.protein,settings.proteinGoal);
+      $("todayCalories").textContent=Math.round(total.calories); $("todayProtein").textContent=total.protein.toFixed(1);
+      $("calorieProgressText").textContent=`${cp}% / ${settings.calorieGoal} kcal`; $("proteinProgressText").textContent=`${pp}% / ${settings.proteinGoal} g`;
+      $("calorieBar").style.width=`${Math.min(cp,100)}%`; $("proteinBar").style.width=`${Math.min(pp,100)}%`;
+      renderDailyLogs(dateStr); renderRecentLogs(); renderCharts();
     }
 
-    function renderDailyLogs(dateStr) {
-      const container = $("dailyLogs");
-      const rows = logs
-        .filter((x) => x.date === dateStr)
-        .sort((a, b) => b.createdAt - a.createdAt);
-
-      if (rows.length === 0) {
-        container.innerHTML = `<div class="empty">這天還沒有紀錄</div>`;
-        return;
-      }
-
-      container.innerHTML = rows
-        .map(
-          (x) => `
-          <div class="log-item">
-            <div class="log-main">
-              <div class="log-food">${escapeHtml(x.food)}</div>
-              <div class="log-meta">
-                ${escapeHtml(x.meal)} · ${Math.round(x.calories)} kcal · ${Number(x.protein).toFixed(1)} g protein
-                ${x.note ? `<br>${escapeHtml(x.note)}` : ""}
-              </div>
-            </div>
-            <button class="log-delete danger" onclick="deleteLog('${x.id}')">刪除</button>
-          </div>
-        `
-        )
-        .join("");
+    function renderDailyLogs(dateStr){
+      const rows=logs.filter(x=>x.date===dateStr).sort((a,b)=>b.createdAt-a.createdAt);
+      if(rows.length===0){$("dailyLogs").innerHTML='<div class="empty">這天還沒有紀錄</div>';return}
+      $("dailyLogs").innerHTML=rows.map(x=>`<div class="log-item"><div><div class="log-food">${escapeHtml(x.food)}</div><div class="log-meta">${escapeHtml(x.meal)} · ${Math.round(x.calories)} kcal · ${Number(x.protein).toFixed(1)} g protein${x.note?`<br>${escapeHtml(x.note)}`:""}</div></div><button class="log-delete danger" onclick="deleteLog('${x.id}')">刪除</button></div>`).join("");
     }
 
-    function renderRecentLogs() {
-      const container = $("recentLogs");
-      const rows = [...logs]
-        .sort((a, b) => b.createdAt - a.createdAt)
-        .slice(0, 20);
-
-      if (rows.length === 0) {
-        container.innerHTML = `<div class="empty">目前沒有紀錄</div>`;
-        return;
-      }
-
-      container.innerHTML = rows
-        .map(
-          (x) => `
-          <div class="log-item">
-            <div class="log-main">
-              <div class="log-food">${escapeHtml(x.food)}</div>
-              <div class="log-meta">
-                ${x.date} · ${escapeHtml(x.meal)} · ${Math.round(x.calories)} kcal · ${Number(x.protein).toFixed(1)} g protein
-              </div>
-            </div>
-          </div>
-        `
-        )
-        .join("");
+    function renderRecentLogs(){
+      const rows=[...logs].sort((a,b)=>b.createdAt-a.createdAt).slice(0,20);
+      if(rows.length===0){$("recentLogs").innerHTML='<div class="empty">目前沒有紀錄</div>';return}
+      $("recentLogs").innerHTML=rows.map(x=>`<div class="log-item"><div><div class="log-food">${escapeHtml(x.food)}</div><div class="log-meta">${x.date} · ${escapeHtml(x.meal)} · ${Math.round(x.calories)} kcal · ${Number(x.protein).toFixed(1)} g protein</div></div></div>`).join("");
     }
 
-    function deleteLog(id) {
-      logs = logs.filter((x) => x.id !== id);
-      saveLogs();
-      updateToday();
+    function deleteLog(id){logs=logs.filter(x=>x.id!==id);saveLogs();updateToday()}
+
+    function renderCharts(){
+      const daily=dailySummary(), labels=daily.map(x=>x.date), calories=daily.map(x=>Number(x.calories.toFixed(1))), protein=daily.map(x=>Number(x.protein.toFixed(1)));
+      if(calorieChart)calorieChart.destroy(); if(proteinChart)proteinChart.destroy();
+      calorieChart=new Chart($("calorieChart"),{type:"line",data:{labels,datasets:[{label:"熱量 kcal",data:calories,tension:.25,borderWidth:2,pointRadius:4},{label:"目標",data:labels.map(()=>settings.calorieGoal),borderWidth:1.5,borderDash:[6,6],pointRadius:0}]},options:chartOptions("kcal")});
+      proteinChart=new Chart($("proteinChart"),{type:"line",data:{labels,datasets:[{label:"蛋白質 g",data:protein,tension:.25,borderWidth:2,pointRadius:4},{label:"目標",data:labels.map(()=>settings.proteinGoal),borderWidth:1.5,borderDash:[6,6],pointRadius:0}]},options:chartOptions("g")});
     }
 
-    function renderCharts() {
-      const daily = dailySummary();
-      const labels = daily.map((x) => x.date);
-      const calories = daily.map((x) => Number(x.calories.toFixed(1)));
-      const protein = daily.map((x) => Number(x.protein.toFixed(1)));
+    function chartOptions(unit){return{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:true,labels:{boxWidth:12}},tooltip:{callbacks:{label:(c)=>`${c.dataset.label}: ${c.parsed.y} ${unit}`}}},scales:{x:{ticks:{maxRotation:45,minRotation:0}},y:{beginAtZero:true}}}}
+    function escapeHtml(str){return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 
-      if (calorieChart) calorieChart.destroy();
-      if (proteinChart) proteinChart.destroy();
-
-      calorieChart = new Chart($("calorieChart"), {
-        type: "line",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "熱量 kcal",
-              data: calories,
-              tension: 0.25,
-              borderWidth: 2,
-              pointRadius: 4,
-            },
-            {
-              label: "目標",
-              data: labels.map(() => settings.calorieGoal),
-              borderWidth: 1.5,
-              borderDash: [6, 6],
-              pointRadius: 0,
-            },
-          ],
-        },
-        options: chartOptions("kcal"),
-      });
-
-      proteinChart = new Chart($("proteinChart"), {
-        type: "line",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "蛋白質 g",
-              data: protein,
-              tension: 0.25,
-              borderWidth: 2,
-              pointRadius: 4,
-            },
-            {
-              label: "目標",
-              data: labels.map(() => settings.proteinGoal),
-              borderWidth: 1.5,
-              borderDash: [6, 6],
-              pointRadius: 0,
-            },
-          ],
-        },
-        options: chartOptions("g"),
-      });
+    function exportCsv(){
+      const header=["date","meal","food","calories","protein","note"];
+      const rows=logs.map(x=>header.map(k=>csvEscape(x[k]??"")).join(","));
+      const csv=[header.join(","),...rows].join("\n");
+      const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download="calorie_protein_logs.csv"; a.click(); URL.revokeObjectURL(url);
     }
+    function csvEscape(value){const s=String(value);return (s.includes(",")||s.includes("\n")||s.includes('"'))?`"${s.replaceAll('"','""')}"`:s}
+    function importCsv(file){const reader=new FileReader();reader.onload=()=>{const text=String(reader.result||"").replace(/^\ufeff/,"");const lines=text.split(/\r?\n/).filter(Boolean);if(lines.length<2)return;const header=parseCsvLine(lines[0]);const imported=lines.slice(1).map(line=>{const values=parseCsvLine(line);const row=Object.fromEntries(header.map((h,i)=>[h,values[i]??""]));return{id:uid(),date:row.date,meal:row.meal||"其他",food:row.food||"未命名食物",calories:Number(row.calories)||0,protein:Number(row.protein)||0,note:row.note||"",createdAt:Date.now()}}).filter(x=>x.date&&x.food);logs=[...logs,...imported];saveLogs();updateToday();alert(`已匯入 ${imported.length} 筆紀錄`)};reader.readAsText(file,"utf-8")}
 
-    function chartOptions(unit) {
-      return {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: {
-          legend: {
-            display: true,
-            labels: {
-              boxWidth: 12,
-            },
-          },
-          tooltip: {
-            callbacks: {
-              label: function (context) {
-                return `${context.dataset.label}: ${context.parsed.y} ${unit}`;
-              },
-            },
-          },
-        },
-        scales: {
-          x: {
-            ticks: {
-              maxRotation: 45,
-              minRotation: 0,
-            },
-          },
-          y: {
-            beginAtZero: true,
-          },
-        },
-      };
-    }
+    document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));btn.classList.add("active");$(btn.dataset.view).classList.add("active");renderCharts()}));
+    $("foodCategory").addEventListener("change",updateFoodOptions); $("foodPreset").addEventListener("change",updatePresetInfo); $("servings").addEventListener("input",updatePresetInfo); $("applyPreset").addEventListener("click",applyPreset);
+    $("logForm").addEventListener("submit",e=>{e.preventDefault();const item={id:uid(),date:selectedDate(),meal:$("meal").value,food:$("food").value.trim(),calories:Number($("calories").value),protein:Number($("protein").value),note:$("note").value.trim(),createdAt:Date.now()}; if(!item.food){alert("請輸入食物名稱");return} if(item.calories<0||item.protein<0||Number.isNaN(item.calories)||Number.isNaN(item.protein)){alert("熱量與蛋白質必須是 0 以上的數字");return} if(item.calories===0&&item.protein===0){alert("熱量與蛋白質不能同時為 0");return} logs.push(item);saveLogs();e.target.reset();$("meal").value="早餐";$("servings").value="1";updatePresetInfo();updateToday()});
+    $("selectedDate").addEventListener("change",updateToday); $("saveGoals").addEventListener("click",()=>{settings.calorieGoal=Number($("calorieGoal").value)||0;settings.proteinGoal=Number($("proteinGoal").value)||0;saveSettings();updateToday();alert("目標已儲存")});
+    $("exportCsv").addEventListener("click",exportCsv); $("importBtn").addEventListener("click",()=>$("importFile").click()); $("importFile").addEventListener("change",e=>{const file=e.target.files[0];if(file)importCsv(file);e.target.value=""});
+    $("clearAll").addEventListener("click",()=>{const ok=confirm("確定要清空全部紀錄嗎？此操作無法復原。建議先匯出 CSV 備份。");if(!ok)return;logs=[];saveLogs();updateToday()});
 
-    function escapeHtml(str) {
-      return String(str)
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
-    }
-
-    function exportCsv() {
-      const header = ["date", "meal", "food", "calories", "protein", "note"];
-      const rows = logs.map((x) =>
-        header.map((key) => csvEscape(x[key] ?? "")).join(",")
-      );
-      const csv = [header.join(","), ...rows].join("\n");
-      const blob = new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "calorie_protein_logs.csv";
-      a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function csvEscape(value) {
-      const s = String(value);
-      if (s.includes(",") || s.includes("\n") || s.includes('"')) {
-        return `"${s.replaceAll('"', '""')}"`;
-      }
-      return s;
-    }
-
-    function parseCsvLine(line) {
-      const result = [];
-      let current = "";
-      let inQuotes = false;
-
-      for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        const next = line[i + 1];
-
-        if (char === '"' && inQuotes && next === '"') {
-          current += '"';
-          i++;
-        } else if (char === '"') {
-          inQuotes = !inQuotes;
-        } else if (char === "," && !inQuotes) {
-          result.push(current);
-          current = "";
-        } else {
-          current += char;
-        }
-      }
-      result.push(current);
-      return result;
-    }
-
-    function importCsv(file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        const text = String(reader.result || "").replace(/^\ufeff/, "");
-        const lines = text.split(/\r?\n/).filter(Boolean);
-        if (lines.length < 2) return;
-
-        const header = parseCsvLine(lines[0]);
-        const imported = lines.slice(1).map((line) => {
-          const values = parseCsvLine(line);
-          const row = Object.fromEntries(header.map((h, i) => [h, values[i] ?? ""]));
-          return {
-            id: uid(),
-            date: row.date,
-            meal: row.meal || "其他",
-            food: row.food || "未命名食物",
-            calories: Number(row.calories) || 0,
-            protein: Number(row.protein) || 0,
-            note: row.note || "",
-            createdAt: Date.now(),
-          };
-        }).filter((x) => x.date && x.food);
-
-        logs = [...logs, ...imported];
-        saveLogs();
-        updateToday();
-        alert(`已匯入 ${imported.length} 筆紀錄`);
-      };
-      reader.readAsText(file, "utf-8");
-    }
-
-    document.querySelectorAll(".tab").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".tab").forEach((x) => x.classList.remove("active"));
-        document.querySelectorAll(".view").forEach((x) => x.classList.remove("active"));
-        btn.classList.add("active");
-        $(btn.dataset.view).classList.add("active");
-        renderCharts();
-      });
-    });
-
-    $("logForm").addEventListener("submit", (e) => {
-      e.preventDefault();
-
-      const item = {
-        id: uid(),
-        date: selectedDate(),
-        meal: $("meal").value,
-        food: $("food").value.trim(),
-        calories: Number($("calories").value),
-        protein: Number($("protein").value),
-        note: $("note").value.trim(),
-        createdAt: Date.now(),
-      };
-
-      if (!item.food) {
-        alert("請輸入食物名稱");
-        return;
-      }
-      if (item.calories < 0 || item.protein < 0 || Number.isNaN(item.calories) || Number.isNaN(item.protein)) {
-        alert("熱量與蛋白質必須是 0 以上的數字");
-        return;
-      }
-      if (item.calories === 0 && item.protein === 0) {
-        alert("熱量與蛋白質不能同時為 0");
-        return;
-      }
-
-      logs.push(item);
-      saveLogs();
-      e.target.reset();
-      $("meal").value = "早餐";
-      updateToday();
-    });
-
-    $("selectedDate").addEventListener("change", updateToday);
-
-    $("saveGoals").addEventListener("click", () => {
-      settings.calorieGoal = Number($("calorieGoal").value) || 0;
-      settings.proteinGoal = Number($("proteinGoal").value) || 0;
-      saveSettings();
-      updateToday();
-      alert("目標已儲存");
-    });
-
-    $("exportCsv").addEventListener("click", exportCsv);
-
-    $("importBtn").addEventListener("click", () => $("importFile").click());
-
-    $("importFile").addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (file) importCsv(file);
-      e.target.value = "";
-    });
-
-    $("clearAll").addEventListener("click", () => {
-      const ok = confirm("確定要清空全部資料嗎？此操作無法復原。建議先匯出 CSV 備份。");
-      if (!ok) return;
-      logs = [];
-      saveLogs();
-      updateToday();
-    });
-
-    function init() {
-      $("selectedDate").value = todayString();
-      $("calorieGoal").value = settings.calorieGoal;
-      $("proteinGoal").value = settings.proteinGoal;
-      updateToday();
-    }
-
+    async function init(){$("selectedDate").value=todayString();$("calorieGoal").value=settings.calorieGoal;$("proteinGoal").value=settings.proteinGoal;await loadFoodDb();updateToday()}
     init();
   </script>
 </body>
