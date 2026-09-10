@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CP Tracker</title>
+  <meta name="apple-mobile-web-app-title" content="CP Tracker">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    /* ===== TOKENS: LIGHT ===== */
+    :root {
+      color-scheme: light dark;
+      --bg: #f2f2f7;
+      --bg2: #ffffff;
+      --card: rgba(255,255,255,0.82);
+      --card-solid: #ffffff;
+      --text: #1c1c1e;
+      --text2: rgba(60,60,67,0.75);
+      --muted: #8e8e93;
+      --border: rgba(60,60,67,0.13);
+      --primary: #007aff;
+      --primary-soft: rgba(0,122,255,0.1);
+      --danger: #ff3b30;
+      --danger-soft: rgba(255,59,48,0.1);
+      --success: #34c759;
+      --success-soft: rgba(52,199,89,0.1);
+      --warning: #ff9f0a;
+      --warning-soft: rgba(255,159,10,0.13);
+      --input-bg: rgba(120,120,128,0.12);
+      --sh-sm: 0 1px 3px rgba(0,0,0,.07),0 2px 8px rgba(0,0,0,.04);
+      --sh: 0 2px 8px rgba(0,0,0,.08),0 8px 20px rgba(0,0,0,.05);
+      --sh-lg: 0 4px 16px rgba(0,0,0,.1),0 16px 40px rgba(0,0,0,.08);
+      --r: 16px; --r-sm: 11px; --r-xs: 8px;
+      --blur: blur(24px);
+      --ease: cubic-bezier(.25,.46,.45,.94);
+      --spring: cubic-bezier(.34,1.56,.64,1);
+    }
+    /* ===== TOKENS: DARK (system) ===== */
+    @media (prefers-color-scheme:dark) {
+      :root:not([data-theme="light"]) {
+        --bg:#000; --bg2:#1c1c1e; --card:rgba(28,28,30,.85);
+        --card-solid:#2c2c2e; --text:#fff; --text2:rgba(255,255,255,.72);
+        --muted:#8e8e93; --border:rgba(255,255,255,.12);
+        --primary:#0a84ff; --primary-soft:rgba(10,132,255,.18);
+        --danger:#ff453a; --danger-soft:rgba(255,69,58,.18);
+        --success:#30d158; --success-soft:rgba(48,209,88,.18);
+        --warning:#ffd60a; --warning-soft:rgba(255,214,10,.18);
+        --input-bg:rgba(120,120,128,.24);
+        --sh-sm:0 1px 3px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.25);
+        --sh:0 2px 8px rgba(0,0,0,.5),0 8px 20px rgba(0,0,0,.35);
+        --sh-lg:0 4px 16px rgba(0,0,0,.6),0 16px 40px rgba(0,0,0,.45);
+      }
+    }
+    /* ===== TOKENS: DARK (explicit) ===== */
+    :root[data-theme="dark"] {
+      --bg:#000; --bg2:#1c1c1e; --card:rgba(28,28,30,.85);
+      --card-solid:#2c2c2e; --text:#fff; --text2:rgba(255,255,255,.72);
+      --muted:#8e8e93; --border:rgba(255,255,255,.12);
+      --primary:#0a84ff; --primary-soft:rgba(10,132,255,.18);
+      --danger:#ff453a; --danger-soft:rgba(255,69,58,.18);
+      --success:#30d158; --success-soft:rgba(48,209,88,.18);
+      --warning:#ffd60a; --warning-soft:rgba(255,214,10,.18);
+      --input-bg:rgba(120,120,128,.24);
+      --sh-sm:0 1px 3px rgba(0,0,0,.4),0 2px 8px rgba(0,0,0,.25);
+      --sh:0 2px 8px rgba(0,0,0,.5),0 8px 20px rgba(0,0,0,.35);
+      --sh-lg:0 4px 16px rgba(0,0,0,.6),0 16px 40px rgba(0,0,0,.45);
+    }
+
+    /* ===== RESET ===== */
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{-webkit-text-size-adjust:100%}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif;
+      background:var(--bg);color:var(--text);
+      min-height:100vh;
+      transition:background .3s var(--ease),color .3s var(--ease);
+      -webkit-font-smoothing:antialiased;
+    }
+
+    /* ===== LAYOUT ===== */
+    .app{width:100%;max-width:680px;margin:0 auto;padding:0 16px 90px}
+    header{padding:52px 0 20px}
+    .header-eyebrow{font-size:13px;font-weight:600;color:var(--primary);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px}
+    h1{font-size:34px;font-weight:700;letter-spacing:-.5px;line-height:1.1}
+    .subtitle{color:var(--muted);font-size:15px;margin-top:6px}
+
+    /* ===== TABS ===== */
+    .tabs{
+      position:sticky;top:0;z-index:100;
+      padding:12px 16px 8px;margin:0 -16px;
+      background:var(--bg);
+      backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+      border-bottom:1px solid var(--border);
+      transition:background .3s var(--ease);
+    }
+    .tabs-inner{
+      display:flex;background:var(--input-bg);
+      border-radius:11px;padding:3px;gap:2px;
+    }
+    .tab{
+      flex:1;padding:9px 8px;border-radius:9px;border:none;
+      background:transparent;color:var(--muted);
+      font-family:inherit;font-size:14px;font-weight:600;
+      cursor:pointer;transition:all .2s var(--ease);
+      -webkit-tap-highlight-color:transparent;
+    }
+    .tab.active{
+      background:var(--card-solid);color:var(--text);
+      box-shadow:var(--sh-sm);
+    }
+    .tab:active{transform:scale(.97)}
+
+    /* ===== VIEWS ===== */
+    .view{display:none}
+    .view.active{display:block;animation:fadeSlide .28s var(--ease)}
+    @keyframes fadeSlide{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+    /* ===== CARDS ===== */
+    .card{
+      background:var(--card);
+      backdrop-filter:var(--blur);-webkit-backdrop-filter:var(--blur);
+      border:1px solid var(--border);
+      border-radius:var(--r);padding:20px;
+      box-shadow:var(--sh);margin-bottom:14px;
+      transition:background .3s var(--ease),border-color .3s var(--ease),box-shadow .2s ease;
+    }
+    .card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:12px}
+    h2{font-size:20px;font-weight:700;letter-spacing:-.3px}
+    .sec-label{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px}
+
+    /* ===== METRICS ===== */
+    .metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .metric{background:var(--input-bg);border-radius:var(--r-sm);padding:16px;transition:transform .15s ease}
+    .metric-name{color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+    .metric-value{font-size:32px;font-weight:800;letter-spacing:-1.5px;line-height:1}
+    .metric-value.c{color:var(--primary)} .metric-value.p{color:var(--success)}
+    .metric-sub{margin-top:4px;font-size:12px;color:var(--muted);font-weight:500}
+
+    /* ===== PROGRESS ===== */
+    .progress-wrap{margin-top:14px}
+    .progress-label{display:flex;justify-content:space-between;font-size:13px;font-weight:500;color:var(--muted);margin-bottom:7px}
+    .progress-label b{color:var(--text)}
+    .progress{height:7px;background:var(--input-bg);border-radius:999px;overflow:hidden}
+    .bar{height:100%;width:0%;border-radius:999px;transition:width .7s cubic-bezier(.25,.46,.45,.94)}
+    .bar.cal{background:linear-gradient(90deg,var(--primary),#5ac8fa)}
+    .bar.prot{background:linear-gradient(90deg,var(--success),#5ac8fa)}
+    .bar.over{background:linear-gradient(90deg,var(--warning),var(--danger))}
+
+    /* ===== INPUTS ===== */
+    .field{margin-bottom:14px}
+    label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:7px;letter-spacing:.1px}
+    input,select,textarea{
+      width:100%;font:inherit;font-size:16px;
+      border-radius:var(--r-sm);border:1.5px solid transparent;
+      padding:12px 14px;background:var(--input-bg);color:var(--text);
+      outline:none;
+      transition:border-color .18s ease,background .18s ease,box-shadow .18s ease;
+      -webkit-appearance:none;
+    }
+    input:focus,select:focus,textarea:focus{
+      border-color:var(--primary);background:var(--bg2);
+      box-shadow:0 0 0 4px var(--primary-soft);
+    }
+    textarea{resize:vertical;min-height:48px}
+
+    /* ===== BUTTONS ===== */
+    button{
+      width:100%;font:inherit;font-weight:600;font-size:15px;
+      border-radius:var(--r-sm);border:none;padding:14px 16px;
+      cursor:pointer;
+      transition:all .15s ease;
+      -webkit-tap-highlight-color:transparent;
+    }
+    button:active{transform:scale(.97);opacity:.85}
+    .btn-primary{background:var(--primary);color:#fff}
+    .btn-primary:hover{filter:brightness(1.06)}
+    .btn-secondary{background:var(--primary-soft);color:var(--primary)}
+    .btn-danger{background:var(--danger-soft);color:var(--danger)}
+    .btn-ghost{background:var(--input-bg);color:var(--text)}
+    .btn-sm{padding:7px 12px;font-size:13px;width:auto;border-radius:var(--r-xs)}
+    .btn-edit{background:var(--primary-soft);color:var(--primary)}
+    .btn-del{background:var(--danger-soft);color:var(--danger)}
+
+    /* ===== GRID ===== */
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .g2-btn{display:grid;grid-template-columns:1fr auto;gap:8px}
+    .row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .divider{height:1px;background:var(--border);margin:18px 0}
+    .small-note{font-size:13px;color:var(--muted);line-height:1.6;margin-top:8px}
+
+    /* ===== PILLS ===== */
+    .pill{
+      display:inline-flex;align-items:center;gap:4px;
+      border-radius:999px;padding:4px 10px;
+      font-size:12px;font-weight:600;color:var(--muted);background:var(--input-bg);
+    }
+    .pill.ok{background:var(--success-soft);color:var(--success)}
+    .pill.warn{background:var(--warning-soft);color:var(--warning)}
+
+    /* ===== SEARCH ===== */
+    .search-wrap{position:relative;margin-bottom:14px}
+    .search-wrap input{padding-left:40px}
+    .search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;pointer-events:none;user-select:none}
+
+    /* ===== PRESET INFO ===== */
+    .preset-box{
+      background:var(--input-bg);border-radius:var(--r-xs);
+      padding:10px 13px;font-size:13px;color:var(--muted);
+      line-height:1.55;min-height:46px;display:flex;align-items:center;
+    }
+    .preset-box strong{color:var(--text)}
+
+    /* ===== FORM EDIT STATE ===== */
+    .form-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+    .form-hdr-title{font-size:16px;font-weight:700}
+    .edit-badge{
+      background:var(--warning);color:#fff;border-radius:6px;
+      padding:3px 9px;font-size:12px;font-weight:700;
+      animation:badgePop .25s var(--spring);
+    }
+    @keyframes badgePop{from{transform:scale(0.6);opacity:0}to{transform:scale(1);opacity:1}}
+
+    /* ===== LOG ITEMS ===== */
+    .log-item{
+      border-top:1px solid var(--border);
+      padding:14px 0;
+      display:flex;gap:12px;align-items:flex-start;
+      transition:opacity .22s ease,transform .22s ease;
+      animation:itemIn .3s var(--spring);
+    }
+    .log-item:first-child{border-top:0;padding-top:0}
+    @keyframes itemIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+    .log-item.editing{opacity:.4;transform:scale(.99)}
+    .log-item.removing{opacity:0;transform:translateX(20px)}
+    .log-content{flex:1;min-width:0}
+    .log-food{font-weight:600;font-size:15px;margin-bottom:4px;word-break:break-word}
+    .log-meta{color:var(--muted);font-size:13px;line-height:1.5}
+    .meal-badge{
+      display:inline-block;background:var(--primary-soft);color:var(--primary);
+      border-radius:5px;padding:1px 7px;font-size:11px;font-weight:700;margin-right:4px;
+    }
+    .log-actions{display:flex;gap:6px;flex-shrink:0}
+    .empty{color:var(--muted);text-align:center;padding:28px 0;font-size:15px}
+
+    /* ===== TOAST ===== */
+    .toast{
+      position:fixed;bottom:28px;left:50%;
+      transform:translateX(-50%) translateY(80px);
+      background:rgba(44,44,46,.96);color:#fff;
+      padding:12px 22px;border-radius:999px;
+      font-size:15px;font-weight:600;white-space:nowrap;
+      box-shadow:0 8px 32px rgba(0,0,0,.25);
+      z-index:9999;
+      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      transition:transform .32s var(--spring),opacity .22s ease;
+      opacity:0;pointer-events:none;
+    }
+    .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+    .toast.ok{background:rgba(48,209,88,.93)}
+    .toast.err{background:rgba(255,69,58,.93)}
+
+    /* ===== SEGMENTED (theme) ===== */
+    .segmented{display:flex;background:var(--input-bg);border-radius:var(--r-xs);padding:3px;gap:2px}
+    .seg-btn{
+      flex:1;padding:9px 8px;border-radius:7px;border:none;
+      background:transparent;color:var(--muted);
+      font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;
+      transition:all .2s var(--ease);
+    }
+    .seg-btn.active{background:var(--card-solid);color:var(--text);box-shadow:var(--sh-sm)}
+    .seg-btn:active{transform:scale(.97)}
+
+    /* ===== CHARTS ===== */
+    canvas{max-height:230px}
+
+    /* ===== RESPONSIVE ===== */
+    @media(max-width:480px){
+      .app{padding:0 14px 80px} h1{font-size:28px} header{padding:40px 0 16px}
+      .metric-value{font-size:26px}
+      .g2,.row2{grid-template-columns:1fr}
+      .g2-btn{grid-template-columns:1fr auto}
+    }
+  </style>
+</head>
+<body>
+<main class="app">
+  <header>
+    <div class="header-eyebrow" id="headerDate"></div>
+    <h1>CP Tracker</h1>
+    <div class="subtitle">記錄每日熱量 kcal 與蛋白質 g</div>
+  </header>
+
+  <nav class="tabs">
+    <div class="tabs-inner">
+      <button class="tab active" data-view="todayView">今天</button>
+      <button class="tab" data-view="chartView">趨勢</button>
+      <button class="tab" data-view="settingsView">設定</button>
+    </div>
+  </nav>
+
+  <!-- TODAY -->
+  <section id="todayView" class="view active">
+    <div class="card">
+      <div class="card-title">
+        <h2>今日總結</h2>
+        <input id="selectedDate" type="date" style="max-width:160px;font-size:14px" />
+      </div>
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-name">熱量</div>
+          <div class="metric-value c"><span id="todayCalories">0</span></div>
+          <div class="metric-sub">kcal</div>
+        </div>
+        <div class="metric">
+          <div class="metric-name">蛋白質</div>
+          <div class="metric-value p"><span id="todayProtein">0</span></div>
+          <div class="metric-sub">g</div>
+        </div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>熱量目標</span><b id="calPct">0%</b></div>
+        <div class="progress"><div id="calorieBar" class="bar cal"></div></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>蛋白質目標</span><b id="protPct">0%</b></div>
+        <div class="progress"><div id="proteinBar" class="bar prot"></div></div>
+      </div>
+    </div>
+
+    <!-- ADD / EDIT CARD -->
+    <div class="card" id="addCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="sec-label" style="margin:0">從食物庫快速匯入</div>
+        <span id="foodDbStatus" class="pill">讀取中…</span>
+      </div>
+
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input id="foodSearch" type="search" placeholder="搜尋食物名稱…" autocomplete="off" />
+      </div>
+      <div class="g2">
+        <div class="field"><label for="foodCategory">分類</label><select id="foodCategory"></select></div>
+        <div class="field"><label for="foodPreset">食物</label><select id="foodPreset"></select></div>
+      </div>
+      <div class="g2">
+        <div class="field"><label for="servings">份數倍率</label><input id="servings" type="number" min="0.1" step="0.1" value="1" /></div>
+        <div class="field"><label>食物庫資訊</label><div id="presetInfo" class="preset-box">尚未選擇食物</div></div>
+      </div>
+      <button class="btn-secondary" id="applyPreset" type="button">套用到下方欄位 ↓</button>
+
+      <div class="divider"></div>
+
+      <div class="form-hdr">
+        <div class="form-hdr-title" id="formTitle">手動輸入 / 確認</div>
+        <span id="editBadge" class="edit-badge" style="display:none">✏️ 編輯中</span>
+      </div>
+
+      <form id="logForm">
+        <div class="g2">
+          <div class="field">
+            <label for="meal">餐別</label>
+            <select id="meal"><option>早餐</option><option>午餐</option><option>晚餐</option><option>點心</option><option>其他</option></select>
+          </div>
+          <div class="field">
+            <label for="food">食物名稱</label>
+            <input id="food" type="text" placeholder="例如：雞胸肉、便當" required />
+          </div>
+        </div>
+        <div class="g2">
+          <div class="field"><label for="calories">熱量 kcal</label><input id="calories" type="number" min="0" step="1" placeholder="例如：500" required /></div>
+          <div class="field"><label for="protein">蛋白質 g</label><input id="protein" type="number" min="0" step="0.1" placeholder="例如：30" required /></div>
+        </div>
+        <div class="field"><label for="note">備註（選填）</label><textarea id="note" placeholder="例如：健身後、外食估算"></textarea></div>
+        <div class="g2" style="gap:8px">
+          <button type="submit" class="btn-primary" id="submitBtn">＋ 加入當日紀錄</button>
+          <button type="button" class="btn-ghost" id="cancelEditBtn" style="display:none" onclick="cancelEdit()">取消</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><h2>當日明細</h2></div>
+      <div id="dailyLogs"></div>
+    </div>
+  </section>
+
+  <!-- CHART -->
+  <section id="chartView" class="view">
+    <div class="card"><div class="card-title"><h2>每日熱量趨勢</h2></div><canvas id="calorieChart"></canvas></div>
+    <div class="card"><div class="card-title"><h2>每日蛋白質趨勢</h2></div><canvas id="proteinChart"></canvas></div>
+    <div class="card"><div class="card-title"><h2>最近紀錄</h2></div><div id="recentLogs"></div></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="settingsView" class="view">
+    <div class="card">
+      <h2 style="margin-bottom:16px">每日目標</h2>
+      <div class="g2">
+        <div class="field"><label for="calorieGoal">熱量目標 kcal</label><input id="calorieGoal" type="number" min="0" step="50" /></div>
+        <div class="field"><label for="proteinGoal">蛋白質目標 g</label><input id="proteinGoal" type="number" min="0" step="5" /></div>
+      </div>
+      <button class="btn-primary" id="saveGoals">儲存目標</button>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:14px">外觀模式</h2>
+      <div class="field" style="margin:0">
+        <label style="margin-bottom:10px">顯示主題</label>
+        <div class="segmented">
+          <button class="seg-btn" data-mode="system">跟隨系統</button>
+          <button class="seg-btn" data-mode="light">☀️ 淺色</button>
+          <button class="seg-btn" data-mode="dark">🌙 深色</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:14px">資料管理</h2>
+      <button class="btn-secondary" id="exportCsv">↑ 匯出紀錄 CSV</button>
+      <div class="row2">
+        <button class="btn-ghost" id="importBtn">↓ 匯入紀錄 CSV</button>
+        <button class="btn-danger" id="clearAll">清空全部</button>
+      </div>
+      <input id="importFile" type="file" accept=".csv" style="display:none" />
+      <div class="small-note">飲食紀錄儲存在此裝置的 localStorage。清除瀏覽器資料或換裝置前，請先匯出 CSV 備份。</div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom:10px">食物庫說明</h2>
+      <div class="small-note">從同目錄的 <strong>foods.csv</strong> 讀取，欄位需包含 <code>category, name, serving, calories, protein, default_meal, note</code>。修改 CSV 即可更新清單，無需改 HTML。</div>
+    </div>
+  </section>
+</main>
+
+<script>
+const STORAGE_KEY = "fitness_calorie_protein_logs_v1";
+const SETTINGS_KEY = "fitness_calorie_protein_settings_v1";
+const FOOD_CSV_PATH = "foods.csv";
+
+const FALLBACK_FOODS = [
+  {category:"蛋白質",name:"雞胸肉",serving:"100 g",calories:165,protein:31,default_meal:"午餐",note:"去皮熟重估算"},
+  {category:"蛋白質",name:"水煮蛋",serving:"1 顆",calories:70,protein:6,default_meal:"早餐",note:"中大型雞蛋"},
+  {category:"飲料",name:"無糖豆漿",serving:"400 ml",calories:130,protein:13,default_meal:"早餐",note:"依品牌略有差異"},
+  {category:"補充品",name:"乳清蛋白",serving:"1 份",calories:120,protein:24,default_meal:"點心",note:"依品牌標示調整"},
+  {category:"主食",name:"白飯",serving:"1 碗",calories:280,protein:5,default_meal:"午餐",note:"約 200 g 熟飯"}
+];
+
+let logs = loadLogs();
+let settings = loadSettings();
+let foodDb = [];
+let calorieChart = null, proteinChart = null;
+let editingId = null;
+
+const $ = id => document.getElementById(id);
+
+// ===== UTILS =====
+function todayStr(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function uid(){ return `${Date.now()}_${Math.random().toString(16).slice(2)}`; }
+function loadLogs(){ try{ return JSON.parse(localStorage.getItem(STORAGE_KEY))||[]; }catch{ return []; } }
+function saveLogs(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(logs)); }
+function loadSettings(){
+  try{
+    const s = JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {};
+    return { calorieGoal:2200, proteinGoal:120, theme:"system", ...s };
+  }catch{ return {calorieGoal:2200, proteinGoal:120, theme:"system"}; }
+}
+function saveSettings(){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }
+function selDate(){ return $("selectedDate").value || todayStr(); }
+function escHtml(s){ return String(s).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;"); }
+function csvEsc(v){ const s=String(v); return (s.includes(",")||s.includes("\n")||s.includes('"'))?`"${s.replaceAll('"','""')}"`:s; }
+
+// ===== TOAST =====
+function toast(msg, type="ok"){
+  document.querySelector(".toast")?.remove();
+  const el = document.createElement("div");
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add("show")));
+  setTimeout(()=>{ el.classList.remove("show"); setTimeout(()=>el.remove(),350); }, 2600);
+}
+
+// ===== THEME =====
+function applyTheme(mode){
+  settings.theme = mode;
+  const root = document.documentElement;
+  if(mode==="dark") root.setAttribute("data-theme","dark");
+  else if(mode==="light") root.setAttribute("data-theme","light");
+  else root.removeAttribute("data-theme");
+  document.querySelectorAll(".seg-btn").forEach(b => b.classList.toggle("active", b.dataset.mode===mode));
+}
+
+// ===== FOOD DB =====
+async function loadFoodDb(){
+  try{
+    const res = await fetch(`${FOOD_CSV_PATH}?v=${Date.now()}`,{cache:"no-store"});
+    if(!res.ok) throw new Error();
+    const text = await res.text();
+    foodDb = parseFoodCsv(text);
+    if(!foodDb.length) throw new Error();
+    $("foodDbStatus").textContent = `${foodDb.length} 筆`;
+    $("foodDbStatus").className = "pill ok";
+  }catch{
+    foodDb = FALLBACK_FOODS;
+    $("foodDbStatus").textContent = "內建備援";
+    $("foodDbStatus").className = "pill warn";
+  }
+  initFoodSelectors();
+}
+
+function parseCsvLine(line){
+  const r=[]; let cur="",q=false;
+  for(let i=0;i<line.length;i++){
+    const c=line[i],n=line[i+1];
+    if(c==='"'&&q&&n==='"'){cur+='"';i++}
+    else if(c==='"'){q=!q}
+    else if(c===","&&!q){r.push(cur);cur=""}
+    else cur+=c;
+  }
+  r.push(cur); return r;
+}
+
+function parseFoodCsv(text){
+  const lines=String(text).replace(/^﻿/,"").split(/\r?\n/).filter(x=>x.trim());
+  if(lines.length<2) return [];
+  const hdr=parseCsvLine(lines[0]).map(x=>x.trim());
+  return lines.slice(1).map(line=>{
+    const vals=parseCsvLine(line);
+    const row=Object.fromEntries(hdr.map((h,i)=>[h,(vals[i]??"").trim()]));
+    return {
+      category:row.category||"未分類", name:row.name||"未命名",
+      serving:row.serving||"1 份",
+      calories:Number(row.calories)||0, protein:Number(row.protein)||0,
+      default_meal:row.default_meal||"其他", note:row.note||""
+    };
+  }).filter(x=>x.name&&(x.calories>0||x.protein>0));
+}
+
+function initFoodSelectors(){
+  const cats=[...new Set(foodDb.map(x=>x.category))].sort();
+  $("foodCategory").innerHTML = cats.map(c=>`<option value="${escHtml(c)}">${escHtml(c)}</option>`).join("");
+  updateFoodOptions();
+}
+
+function updateFoodOptions(){
+  const q = $("foodSearch").value.trim();
+  const cat = $("foodCategory").value;
+  const rows = q
+    ? foodDb.filter(x=>x.name.includes(q)||x.category.includes(q)||x.note.includes(q))
+    : foodDb.filter(x=>x.category===cat);
+  $("foodPreset").innerHTML = rows.length
+    ? rows.map(x=>{
+        const idx=foodDb.indexOf(x);
+        const pre=q?`[${escHtml(x.category)}] `:"";
+        return `<option value="${idx}">${pre}${escHtml(x.name)}（${escHtml(x.serving)}）</option>`;
+      }).join("")
+    : `<option value="">無符合結果</option>`;
+  updatePresetInfo();
+}
+
+function currentPreset(){
+  const v=$("foodPreset").value;
+  if(v===""||v===undefined) return null;
+  const idx=Number(v);
+  return (Number.isFinite(idx)&&idx>=0&&foodDb[idx]) ? foodDb[idx] : null;
+}
+
+function updatePresetInfo(){
+  const item=currentPreset(), n=Number($("servings").value)||1;
+  if(!item){ $("presetInfo").textContent="尚未選擇食物"; return; }
+  $("presetInfo").innerHTML=`${escHtml(item.serving)} × ${n}<br><strong>${Math.round(item.calories*n)} kcal</strong> · <strong>${(item.protein*n).toFixed(1)} g</strong>`;
+}
+
+function applyPreset(){
+  const item=currentPreset(); if(!item) return;
+  const n=Number($("servings").value)||1;
+  $("meal").value=item.default_meal||"其他";
+  $("food").value=n!==1?`${item.name} × ${n}`:item.name;
+  $("calories").value=Math.round(item.calories*n);
+  $("protein").value=(item.protein*n).toFixed(1);
+  $("note").value=item.note?`食物庫：${item.serving}；${item.note}`:`食物庫：${item.serving}`;
+}
+
+// ===== DATA =====
+function sumDate(d){ return logs.filter(x=>x.date===d).reduce((a,x)=>({calories:a.calories+(Number(x.calories)||0),protein:a.protein+(Number(x.protein)||0)}),{calories:0,protein:0}); }
+function dailySummary(){
+  const m=new Map();
+  logs.forEach(x=>{
+    if(!m.has(x.date))m.set(x.date,{date:x.date,calories:0,protein:0});
+    const r=m.get(x.date);
+    r.calories+=Number(x.calories)||0; r.protein+=Number(x.protein)||0;
+  });
+  return [...m.values()].sort((a,b)=>a.date.localeCompare(b.date));
+}
+function pct(v,g){ return(!g||g<=0)?0:Math.round(v/g*100); }
+
+// ===== RENDER =====
+function updateToday(){
+  const d=selDate(), tot=sumDate(d), cp=pct(tot.calories,settings.calorieGoal), pp=pct(tot.protein,settings.proteinGoal);
+  $("todayCalories").textContent=Math.round(tot.calories);
+  $("todayProtein").textContent=tot.protein.toFixed(1);
+  $("calPct").textContent=`${cp}% / ${settings.calorieGoal} kcal`;
+  $("protPct").textContent=`${pp}% / ${settings.proteinGoal} g`;
+  const cb=$("calorieBar"); cb.style.width=`${Math.min(cp,100)}%`; cb.className=`bar ${cp>110?"over":"cal"}`;
+  $("proteinBar").style.width=`${Math.min(pp,100)}%`;
+  renderDailyLogs(d); renderRecentLogs();
+}
+
+function renderDailyLogs(d){
+  const rows=logs.filter(x=>x.date===d).sort((a,b)=>b.createdAt-a.createdAt);
+  if(!rows.length){ $("dailyLogs").innerHTML='<div class="empty">這天還沒有紀錄 🍽️</div>'; return; }
+  $("dailyLogs").innerHTML=rows.map(x=>`
+    <div class="log-item${editingId===x.id?" editing":""}" id="li-${x.id}">
+      <div class="log-content">
+        <div class="log-food">${escHtml(x.food)}</div>
+        <div class="log-meta">
+          <span class="meal-badge">${escHtml(x.meal)}</span>${Math.round(x.calories)} kcal · ${Number(x.protein).toFixed(1)} g
+          ${x.note?`<br>${escHtml(x.note)}`:""}
+        </div>
+      </div>
+      <div class="log-actions">
+        <button class="btn-sm btn-edit" onclick="startEdit('${x.id}')">編輯</button>
+        <button class="btn-sm btn-del" onclick="deleteLog('${x.id}')">刪除</button>
+      </div>
+    </div>`).join("");
+}
+
+function renderRecentLogs(){
+  const rows=[...logs].sort((a,b)=>b.createdAt-a.createdAt).slice(0,20);
+  if(!rows.length){ $("recentLogs").innerHTML='<div class="empty">目前沒有紀錄</div>'; return; }
+  $("recentLogs").innerHTML=rows.map(x=>`
+    <div class="log-item">
+      <div class="log-content">
+        <div class="log-food">${escHtml(x.food)}</div>
+        <div class="log-meta">${x.date} · <span class="meal-badge">${escHtml(x.meal)}</span>${Math.round(x.calories)} kcal · ${Number(x.protein).toFixed(1)} g</div>
+      </div>
+    </div>`).join("");
+}
+
+// ===== EDIT =====
+function startEdit(id){
+  const item=logs.find(x=>x.id===id); if(!item) return;
+  editingId=id;
+  $("selectedDate").value=item.date;
+  $("meal").value=item.meal;
+  $("food").value=item.food;
+  $("calories").value=item.calories;
+  $("protein").value=item.protein;
+  $("note").value=item.note||"";
+  $("formTitle").textContent="編輯紀錄";
+  $("editBadge").style.display="inline-block";
+  $("submitBtn").textContent="✓ 更新紀錄";
+  $("cancelEditBtn").style.display="";
+  $("addCard").scrollIntoView({behavior:"smooth",block:"start"});
+  renderDailyLogs(selDate());
+}
+
+function cancelEdit(){
+  editingId=null;
+  $("logForm").reset();
+  $("meal").value="早餐"; $("servings").value="1";
+  $("formTitle").textContent="手動輸入 / 確認";
+  $("editBadge").style.display="none";
+  $("submitBtn").textContent="＋ 加入當日紀錄";
+  $("cancelEditBtn").style.display="none";
+  updatePresetInfo();
+  renderDailyLogs(selDate());
+}
+
+// ===== DELETE =====
+function deleteLog(id){
+  const el=document.getElementById("li-"+id);
+  const doDelete=()=>{ logs=logs.filter(x=>x.id!==id); saveLogs(); updateToday(); };
+  if(el){ el.classList.add("removing"); setTimeout(doDelete,220); }
+  else doDelete();
+}
+
+// ===== CHARTS =====
+function isDark(){
+  const t=document.documentElement.getAttribute("data-theme");
+  return t==="dark"||(t!=="light"&&window.matchMedia("(prefers-color-scheme:dark)").matches);
+}
+function renderCharts(){
+  const daily=dailySummary(), labels=daily.map(x=>x.date);
+  const dark=isDark(), grid=dark?"rgba(255,255,255,.08)":"rgba(0,0,0,.06)", tick=dark?"#6b6b70":"#8e8e93";
+  if(calorieChart)calorieChart.destroy();
+  if(proteinChart)proteinChart.destroy();
+  const mkOpts=(unit)=>({
+    responsive:true,maintainAspectRatio:true,
+    plugins:{legend:{display:true,labels:{boxWidth:10,font:{size:12},color:tick}},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y} ${unit}`}}},
+    scales:{x:{ticks:{maxRotation:45,color:tick,font:{size:11}},grid:{color:grid}},y:{beginAtZero:true,ticks:{color:tick,font:{size:11}},grid:{color:grid}}}
+  });
+  calorieChart=new Chart($("calorieChart"),{type:"line",data:{labels,datasets:[
+    {label:"熱量 kcal",data:daily.map(x=>+x.calories.toFixed(1)),tension:.3,borderWidth:2.5,pointRadius:4,borderColor:"#007aff",backgroundColor:"rgba(0,122,255,.08)",fill:true},
+    {label:"目標",data:labels.map(()=>settings.calorieGoal),borderWidth:1.5,borderDash:[5,5],pointRadius:0,borderColor:"rgba(0,122,255,.35)"}
+  ]},options:mkOpts("kcal")});
+  proteinChart=new Chart($("proteinChart"),{type:"line",data:{labels,datasets:[
+    {label:"蛋白質 g",data:daily.map(x=>+x.protein.toFixed(1)),tension:.3,borderWidth:2.5,pointRadius:4,borderColor:"#34c759",backgroundColor:"rgba(52,199,89,.08)",fill:true},
+    {label:"目標",data:labels.map(()=>settings.proteinGoal),borderWidth:1.5,borderDash:[5,5],pointRadius:0,borderColor:"rgba(52,199,89,.35)"}
+  ]},options:mkOpts("g")});
+}
+
+// ===== IMPORT / EXPORT =====
+function exportCsv(){
+  const hdr=["date","meal","food","calories","protein","note"];
+  const csv=[hdr.join(","),...logs.map(x=>hdr.map(k=>csvEsc(x[k]??"")).join(","))].join("\n");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8;"}));
+  a.download="calorie_protein_logs.csv"; a.click();
+  toast("✓ 已匯出 CSV");
+}
+function importCsv(file){
+  const r=new FileReader();
+  r.onload=()=>{
+    const text=String(r.result||"").replace(/^﻿/,"");
+    const lines=text.split(/\r?\n/).filter(Boolean);
+    if(lines.length<2) return;
+    const hdr=parseCsvLine(lines[0]);
+    const imported=lines.slice(1).map(line=>{
+      const vals=parseCsvLine(line), row=Object.fromEntries(hdr.map((h,i)=>[h,vals[i]??""]));
+      return {id:uid(),date:row.date,meal:row.meal||"其他",food:row.food||"未命名",calories:Number(row.calories)||0,protein:Number(row.protein)||0,note:row.note||"",createdAt:Date.now()};
+    }).filter(x=>x.date&&x.food);
+    logs=[...logs,...imported]; saveLogs(); updateToday();
+    toast(`✓ 已匯入 ${imported.length} 筆紀錄`);
+  };
+  r.readAsText(file,"utf-8");
+}
+
+// ===== EVENTS =====
+document.querySelectorAll(".tab").forEach(btn=>btn.addEventListener("click",()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+  document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));
+  btn.classList.add("active"); $(btn.dataset.view).classList.add("active");
+  if(btn.dataset.view==="chartView") renderCharts();
+}));
+
+$("foodSearch").addEventListener("input",updateFoodOptions);
+$("foodCategory").addEventListener("change",()=>{ if(!$("foodSearch").value.trim()) updateFoodOptions(); });
+$("foodPreset").addEventListener("change",updatePresetInfo);
+$("servings").addEventListener("input",updatePresetInfo);
+$("applyPreset").addEventListener("click",applyPreset);
+
+$("logForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const foodName=$("food").value.trim();
+  const cal=Number($("calories").value), prot=Number($("protein").value);
+  if(!foodName){ toast("請輸入食物名稱","err"); return; }
+  if(cal<0||prot<0||isNaN(cal)||isNaN(prot)){ toast("熱量與蛋白質須為 0 以上的數字","err"); return; }
+  if(cal===0&&prot===0){ toast("熱量與蛋白質不能同時為 0","err"); return; }
+
+  const orig=editingId?logs.find(x=>x.id===editingId):null;
+  const item={
+    id:editingId||uid(), date:selDate(), meal:$("meal").value,
+    food:foodName, calories:cal, protein:prot,
+    note:$("note").value.trim(), createdAt:orig?orig.createdAt:Date.now()
+  };
+  if(editingId){
+    logs=logs.map(x=>x.id===editingId?item:x);
+    toast("✓ 紀錄已更新"); cancelEdit();
+  } else {
+    logs.push(item);
+    toast("✓ 紀錄已新增");
+    e.target.reset(); $("meal").value="早餐"; $("servings").value="1"; updatePresetInfo();
+  }
+  saveLogs(); updateToday();
+});
+
+$("selectedDate").addEventListener("change",updateToday);
+
+$("saveGoals").addEventListener("click",()=>{
+  const cg=Number($("calorieGoal").value), pg=Number($("proteinGoal").value);
+  if(cg<0||pg<0){ toast("目標不能為負數","err"); return; }
+  settings.calorieGoal=cg||0; settings.proteinGoal=pg||0;
+  saveSettings(); updateToday(); toast("✓ 目標已儲存");
+});
+
+$("exportCsv").addEventListener("click",exportCsv);
+$("importBtn").addEventListener("click",()=>$("importFile").click());
+$("importFile").addEventListener("change",e=>{ const f=e.target.files[0]; if(f)importCsv(f); e.target.value=""; });
+$("clearAll").addEventListener("click",()=>{
+  if(!confirm("確定要清空全部紀錄嗎？此操作無法復原，建議先匯出 CSV 備份。")) return;
+  logs=[]; saveLogs(); updateToday(); toast("已清空全部紀錄","ok");
+});
+
+document.querySelectorAll(".seg-btn").forEach(btn=>btn.addEventListener("click",()=>{
+  applyTheme(btn.dataset.mode); saveSettings();
+}));
+
+// ===== INIT =====
+function updateHeaderDate(){
+  const d=new Date(), days=["日","一","二","三","四","五","六"];
+  $("headerDate").textContent=`${d.getFullYear()} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日（週${days[d.getDay()]}）`;
+}
+
+async function init(){
+  updateHeaderDate();
+  $("selectedDate").value=todayStr();
+  $("calorieGoal").value=settings.calorieGoal;
+  $("proteinGoal").value=settings.proteinGoal;
+  applyTheme(settings.theme||"system");
+  await loadFoodDb();
+  updateToday();
+}
+init();
+</script>
+</body>
+</html>
